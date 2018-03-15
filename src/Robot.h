@@ -13,13 +13,10 @@
 #define kRearLeftMotorChannel 12
 #define kRearRightMotorChannel 13
 
-#define kScissorMotor1Channel 2
-#define kScissorMotor2Channel 3
+#define kLiftMotorChannel 2
 
 #define kGrabberMotorChannel 18
 
 #define kClimberMotorChannel 1
-
-#define kGrabberPistonChannel 0
 
 #endif /* ROBOT_H_ */

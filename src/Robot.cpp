@@ -6,7 +6,7 @@
 #include <LiveWindow/LiveWindow.h>
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
-#include <ctre/Phoenix.h>
+#include"ctre/Phoenix.h"
 #include <WPILib.h>
 #include <ADXRS450_Gyro.h>
 
@@ -27,11 +27,10 @@ public:
 
 		robotDrive = new MecanumDrive(*FrontLeftTalon, *RearLeftTalon,
 				*FrontRightTalon, *RearRightTalon);
-		ScissorTalon1 = new TalonSRX(kScissorMotor1Channel);
-		ScissorTalon2 = new TalonSRX(kScissorMotor2Channel);
-
-		ScissorTalon2->Set(ControlMode::Follower, kScissorMotor1Channel);
-		ScissorTalon1->SetInverted(true);
+		LiftTalon = new TalonSRX(kLiftMotorChannel);
+		LiftTalon->ConfigSelectedFeedbackSensor(FeedbackDevice::CTRE_MagEncoder_Relative, 0, 0);
+		LiftTalon->ConfigMotionAcceleration(liftMaxAccel, 0);
+		LiftTalon->ConfigMotionCruiseVelocity(liftMaxVelocity/10, 0);
 
 
 		GrabberTalon = new TalonSRX(kGrabberMotorChannel);
@@ -69,7 +68,7 @@ public:
 		 if (gameData.length > 0) {
 			if (autoSelected == autoNameRight) {
 			// Right Auto goes here
-				if(autoObjective == autoObjectiveLine){
+				if(autoObjective == autoObjectiveLine) {
 					if(gameData[0]=="L"){
 						strafePhaseMultiplier=-3;
 						drivePhaseMultiplier=1;}
@@ -214,23 +213,14 @@ public:
 		if (!leftStick.GetRawButton(1)) {
 			robotDrive->DriveCartesian(rightStick.GetX(),
 					-1 * rightStick.GetY(), leftStick.GetX());
-		} else {
+		} else {0
 			robotDrive->DriveCartesian(rightStick.GetX(),
 					-1 * rightStick.GetY(), leftStick.GetX(), gyro->GetAngle());
 		}
 
-		// manipulators
-		float scissorSpeed = 0.0;
-		float rawScissorSpeed = 0.0;
-		//
+		liftPosition += leftStick.GetY() * liftPosMultiplier;
 
-		if (leftStick.GetRawButton(3)) {
-			scissorSpeed = 1 * (leftStick.GetZ() - 1) / 2; //Chris attempts to code part 1
-		}
-		 else if (leftStick.GetRawButton(2)) {
-			scissorSpeed = -1 * (leftStick.GetZ() - 1) / 2; // Part 2
-		}
-		ScissorTalon1->Set(ControlMode::PercentOutput, scissorSpeed);
+		LiftTalon->Set(ControlMode::MotionMagic, liftPosition);
 /*
 		if (rightStick.GetRawButton(3)) {
 			GrabberTalon->Set(ControlMode::PercentOutput, 0.5);
@@ -249,7 +239,6 @@ public:
 			ClimberTalon->Set(ControlMode::PercentOutput, 0.0);
 		}
 
-		testingSolenoid.Set(rightStick.GetRawButton(1));
 	}
 
 	void TestPeriodic() {
@@ -288,7 +277,11 @@ private:
 
 	MecanumDrive *robotDrive;
 
-	TalonSRX *ScissorTalon1;
+	TalonSRX *LiftTalon;
+	float liftMaxVelocity = 100; // units per second, 4096 units = 1 rotation, 1 rot = 100 b, 16b = 76c b = 76/16c
+	float liftMaxAccel = 200; // units per 100ms per second
+	float liftPosMultiplier = 1;
+	float liftPosition;
 
 	TalonSRX *GrabberTalon;
 
@@ -298,11 +291,6 @@ private:
 	std::string gameData;
 
 	ADXRS450_Gyro *gyro;
-
-	frc::Solenoid testingSolenoid {0};
-	Compressor *c = new Compressor(0);
-
-
 
 
 	// the numbers are essentially multipliers of the time it needs to drive / the direction`
