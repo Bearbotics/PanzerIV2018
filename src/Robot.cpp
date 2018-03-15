@@ -213,7 +213,7 @@ public:
 		if (!leftStick.GetRawButton(1)) {
 			robotDrive->DriveCartesian(rightStick.GetX(),
 					-1 * rightStick.GetY(), leftStick.GetX());
-		} else {0
+		} else {
 			robotDrive->DriveCartesian(rightStick.GetX(),
 					-1 * rightStick.GetY(), leftStick.GetX(), gyro->GetAngle());
 		}
@@ -286,7 +286,6 @@ private:
 	TalonSRX *GrabberTalon;
 
 	TalonSRX *ClimberTalon;
-
 
 	std::string gameData;
 
